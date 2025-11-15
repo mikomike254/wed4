@@ -9,6 +9,15 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+export async function testConnection(): Promise<boolean> {
+  try {
+    const { error } = await supabase.from('products').select('count').limit(1);
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
 export interface Product {
   id: string;
   name: string;

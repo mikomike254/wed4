@@ -11,8 +11,9 @@ import WhatsAppFloating from './components/WhatsAppFloating';
 import CartDrawer from './components/CartDrawer';
 import DiscountBanner from './components/DiscountBanner';
 import CategorySection from './components/CategorySection';
+import ConnectionError from './components/ConnectionError';
 import { cartService } from './lib/cart';
-import { supabase, Product } from './lib/supabase';
+import { supabase, Product, testConnection } from './lib/supabase';
 
 function App() {
   const [currentCategory, setCurrentCategory] = useState<string>('all');
@@ -24,16 +25,25 @@ function App() {
   const [womenProducts, setWomenProducts] = useState<Product[]>([]);
   const [unisexProducts, setUnisexProducts] = useState<Product[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
+  const [connectionError, setConnectionError] = useState(false);
 
   useEffect(() => {
+    checkConnection();
     updateCartCount();
     const interval = setInterval(updateCartCount, 1000);
     return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
-    loadCategoryProducts();
-  }, []);
+    if (!connectionError) {
+      loadCategoryProducts();
+    }
+  }, [connectionError]);
+
+  const checkConnection = async () => {
+    const isConnected = await testConnection();
+    setConnectionError(!isConnected);
+  };
 
   const updateCartCount = async () => {
     try {
@@ -94,6 +104,12 @@ function App() {
       setShowHero(false);
     }
   };
+
+  if (connectionError) {
+    return (
+      <ConnectionError onRetry={checkConnection} />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
